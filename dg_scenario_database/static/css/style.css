@@ -1,0 +1,36 @@
+.tag {
+  display: inline-block;
+  padding: 5px;
+  margin: 2px;
+  border-radius: 4px;
+}
+
+.tag-remove-btn {
+  margin-left: 5px;
+  cursor: pointer;
+}
+
+.ui-autocomplete {
+  position: absolute;
+  z-index: 1000;
+}
+
+.ui-autocomplete.ui-widget-content {
+  background-color: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 0.25rem;
+}
+
+.ui-autocomplete .dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 0.25rem 1.5rem;
+  clear: both;
+  font-weight: 400;
+  color: #212529;
+  text-align: inherit;
+  white-space: nowrap;
+  background-color: transparent;
+  border: 0;
+  text-decoration: none;
+}
