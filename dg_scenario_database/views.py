@@ -25,10 +25,11 @@ def add_tag():
         new_tag = Tag(name=tag_name)
         db.session.add(new_tag)
         db.session.commit()
+        app.logger.info(f'Created new tag: "{tag_name}"')
     scenario = Scenario.query.filter(Scenario.id == scenario_id).first()
     scenario.tags.append(new_tag)
     db.session.commit()
-    app.logger.info(f'Tag {tag_name} added to scenario {scenario.title}')
+    app.logger.info(f'Tag "{tag_name}" added to scenario "{scenario.title}"')
     return jsonify({'success' : True, 'message' : 'Tag added successfully'})
 
 @app.route('/remove_tag', methods=['POST'])
@@ -41,7 +42,7 @@ def remove_tag():
     scenario = Scenario.query.filter(Scenario.id == scenario_id).first()
     scenario.tags.remove(tag)
     db.session.commit()
-    app.logger.info(f'Tag {tag_name} removed from scenario {scenario.title}')
+    app.logger.info(f'Tag "{tag_name}" removed from scenario "{scenario.title}"')
     return jsonify({'success' : True, 'message' : 'Tag removed successfully'})
 
 @app.route('/signup', methods=['GET', 'POST'])
@@ -54,6 +55,7 @@ def signup():
         user.set_password(form.password.data)
         db.session.add(user)
         db.session.commit()
+        app.logger.info(f'Registered new user: {user.username}')
         login_user(user, remember=True)
         return redirect(url_for('index'))
     return render_template('signup.html', form=form)
@@ -67,14 +69,17 @@ def login():
         user = User.query.filter_by(username=form.username.data).first()
         if user and user.check_password(form.password.data):
             login_user(user, remember=form.remember.data)
+            app.logger.info(f'Logged in user: {user.username}')
             return redirect(url_for('index'))
         else:
-            flash('Login unsuccessful. Please check your email and password.')
+            flash('Login unsuccessful. Please check your username and password.')
     return render_template('login.html', form=form)
 
 @app.route('/logout')
 def logout():
+    username = current_user.username
     logout_user()
+    app.logger.info(f'Logged out user: {username}')
     return redirect(url_for('index'))
 
 @app.route('/show_tags', methods=['GET'])
@@ -82,3 +87,4 @@ def show_tags():
     tags = Tag.query.all()
     out = '\n'.join([tag.name for tag in tags])
     return out
+
