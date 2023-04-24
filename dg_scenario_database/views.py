@@ -40,10 +40,13 @@ def remove_tag():
     scenario_id = data['scenario_id']
     tag = Tag.query.filter_by(name=tag_name).first()
     scenario = Scenario.query.filter(Scenario.id == scenario_id).first()
-    scenario.tags.remove(tag)
-    db.session.commit()
-    app.logger.info(f'Tag "{tag_name}" removed from scenario "{scenario.title}"')
-    return jsonify({'success' : True, 'message' : 'Tag removed successfully'})
+    if tag in scenario.tags:
+        scenario.tags.remove(tag)
+        db.session.commit()
+        app.logger.info(f'Tag "{tag_name}" removed from scenario "{scenario.title}"')
+        return jsonify({'success' : True, 'message' : 'Tag removed successfully'})
+    app.logger.info(f'Could not remove tag "{tag_name}" from scenario "{scenario.title}". Tag not in scenario tag list.')
+    return jsonify({'success' : False, 'message' : 'Failed to remove tag'})
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
