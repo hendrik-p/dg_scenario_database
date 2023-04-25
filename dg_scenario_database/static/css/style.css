@@ -34,3 +34,8 @@
   border: 0;
   text-decoration: none;
 }
+
+.dropdown-item:hover {
+    cursor: pointer;
+    background-color: #f6f6f6;
+}

@@ -64,8 +64,7 @@ $(document).ready(function () {
         minLength: 0,
         select: function (event, ui) {
           event.preventDefault();
-          $(this).replaceWith(`<div class="tag badge bg-secondary">${ui.item.value}<span class="tag-remove-btn">x</span></div>`);
-          input.data('selected', true);
+          $(this).val(ui.item.value);
         },
         close: function () {
           if (input.data('selected')) {
@@ -86,28 +85,25 @@ $(document).ready(function () {
         $(this).autocomplete('search', '');
       });
 
-      // Add the new tag when the input loses focus
+      // Remove input when the input loses focus
       input.on('blur', function () {
-        addTag($(this));
+        $(this).remove();
       });
 
       // Add the new tag when the user presses Enter
       input.on('keydown', function (event) {
         if (event.keyCode === 13) { // Enter key
           event.preventDefault();
-          addTag($(this));
+          const newTag = $(this).val().trim();
+          const row = table.row($(this).parents('tr'));
+          const id = row.data()['id'];
+          addTag($(this), newTag, id);
         }
       });
 
       // Function to add a new tag
-      function addTag(inputElement) {
-        const newTag = inputElement.val().trim();
+      function addTag(inputElement, newTag, scenario_id) {
         if (newTag) {
-          const row = table.row(inputElement.parents('tr'))
-          console.log(row)
-          console.log(inputElement)
-          console.log(inputElement.parents('tr'))
-          const scenario_id = row.data()['id']
           $.ajax({
             url: '/add_tag',
             method: 'POST',
