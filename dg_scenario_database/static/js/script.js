@@ -104,8 +104,10 @@ $(document).ready(function () {
         const newTag = inputElement.val().trim();
         if (newTag) {
           const row = table.row(inputElement.parents('tr'))
+          console.log(row)
+          console.log(inputElement)
+          console.log(inputElement.parents('tr'))
           const scenario_id = row.data()['id']
-          console.log(scenario_id)
           $.ajax({
             url: '/add_tag',
             method: 'POST',
