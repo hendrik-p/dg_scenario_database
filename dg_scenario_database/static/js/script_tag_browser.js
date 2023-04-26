@@ -15,7 +15,6 @@ $(document).ready(function () {
     const row = $(this).parents('tr');
     const name = table.row(row).data()['tag'];
     const id = table.row(row).data()['id'];
-    console.log(id);
     $.ajax({
       url: '/remove_tag_from_database',
       method: 'POST',

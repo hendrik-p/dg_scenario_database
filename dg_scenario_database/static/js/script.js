@@ -21,7 +21,7 @@ $(document).ready(function () {
     const row = table.row(tagCell.parent())
     const scenario_id = row.data()['id']
     $.ajax({
-      url: '/remove_tag_from_scenario',
+      url: '/remove_tag',
       method: 'POST',
       contentType: 'application/json',
       data: JSON.stringify({
