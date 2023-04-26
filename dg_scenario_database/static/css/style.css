@@ -5,6 +5,18 @@
   border-radius: 4px;
 }
 
+.scenario {
+  display: inline-block;
+  padding: 5px;
+  margin: 2px;
+  border-radius: 4px;
+}
+
+.scenario a:link, .scenario a:visited {
+    color: white;
+    text-decoration: none;
+}
+
 .tag-remove-btn {
   margin-left: 5px;
   cursor: pointer;

@@ -34,7 +34,7 @@ def add_tag():
 
 @app.route('/remove_tag', methods=['POST'])
 @login_required
-def remove_tag():
+def remove_tag_from_scenario():
     data = request.get_json()
     tag_name = data['tag']
     scenario_id = data['scenario_id']
@@ -47,6 +47,22 @@ def remove_tag():
         return jsonify({'success' : True, 'message' : 'Tag removed successfully'})
     app.logger.info(f'Could not remove tag "{tag_name}" from scenario "{scenario.title}". Tag not in scenario tag list.')
     return jsonify({'success' : False, 'message' : 'Failed to remove tag'})
+
+@app.route('/remove_tag_from_database', methods=['POST'])
+@login_required
+def remove_tag_from_database():
+    data = request.get_json()
+    tag_id = data['tag_id']
+    tag_name = data['tag_name']
+    Tag.query.filter_by(id=tag_id).delete()
+    db.session.commit()
+    app.logger.info(f'Tag "{tag_name}" removed from database by user {current_user.username}')
+    return jsonify({'success' : True, 'message' : 'Tag removed successfully from database'})
+
+@app.route('/tags')
+def browse_tags():
+    tags = Tag.query.order_by(Tag.name.asc()).all()
+    return render_template('tags.html', tags=tags)
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -84,10 +100,4 @@ def logout():
     logout_user()
     app.logger.info(f'Logged out user: {username}')
     return redirect(url_for('index'))
-
-@app.route('/show_tags', methods=['GET'])
-def show_tags():
-    tags = Tag.query.all()
-    out = '\n'.join([tag.name for tag in tags])
-    return out
 
