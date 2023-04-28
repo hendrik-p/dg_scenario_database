@@ -18,6 +18,7 @@ class Scenario(db.Model):
     teaser = db.Column(db.Text)
     author = db.Column(db.String)
     year = db.Column(db.String)
+    category = db.Column(db.String)
     url = db.Column(db.String)
 
     tags = db.relationship(

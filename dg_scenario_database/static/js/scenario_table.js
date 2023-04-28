@@ -29,6 +29,9 @@ function addTag(inputElement, newTag, scenario_id) {
 
 $(document).ready(function () {
   const table = $('#scenario_table').DataTable({
+    dom: "<'row'<'col-sm-12 col-md-4'l><'col-sm-12 col-md-4 category-dropdown-wrapper'<'category-label'><'category-dropdown'>><'col-sm-12 col-md-4'f>>" +
+         "<'row'<'col-sm-12'tr>>" +
+         "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
     "order": [[4, "asc"], [1, "asc"]],
     "pageLength" : 50,
     "lengthMenu": [ [20, 50, 100, -1], [20, 50, 100, "All"] ],
@@ -38,9 +41,23 @@ $(document).ready(function () {
       {data: "teaser"},
       {data: "author"},
       {data: "year"},
+      {data: "type"},
       {data: "tags"},
     ]
   });
+
+  $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+    var selectedCategory = $('#category-filter').val();
+    var category = data[5];
+    return selectedCategory === "" || selectedCategory === category;
+  });
+
+  $('#category-filter').on('change', function() {
+    table.draw();
+  });
+
+  $('.category-label').text('Categories displayed: ');
+  $('#category-filter').appendTo('.category-dropdown');
 
   $.ajax({
     url: '/check_login',

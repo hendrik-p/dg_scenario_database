@@ -5,6 +5,12 @@
 <div class="container">
   <div class="row mt-5">
     <div class="col">
+      <select id="category-filter">
+        <option value="">All</option>
+        <option value="Shotgun">Shotgun</option>
+        <option value="Official">Official</option>
+        <option value="Other">Other</option>
+      </select>
       <table id="scenario_table" class="table table-bordered table-striped table-hover" style="width:100%">
         <thead>
           <tr>
@@ -13,6 +19,7 @@
             <th>Teaser</th>
             <th>Author</th>
             <th>Year</th>
+            <th>Category</th>
             <th>Tags</th>
           </tr>
         </thead>
@@ -24,6 +31,7 @@
             <td>{{ scenario.teaser }}</td>
             <td>{{ scenario.author }}</td>
             <td>{{ scenario.year }}</td>
+            <td>{{ scenario.category }}</td>
             <td class="tag_cell">
               {% for tag in scenario.tags %}
               <!--

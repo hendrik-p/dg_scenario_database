@@ -51,3 +51,22 @@
     cursor: pointer;
     background-color: #f6f6f6;
 }
+
+.category-dropdown-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+/* For better compatibility with Bootstrap */
+.category-dropdown-wrapper select {
+  width: auto;
+  display: inline;
+}
+
+.category-label {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 8px;
+}
+
