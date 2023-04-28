@@ -1,4 +1,4 @@
-from flask import render_template, request, jsonify, redirect, url_for, flash
+from flask import json, render_template, request, jsonify, redirect, url_for, flash
 from flask_login import login_user, current_user, logout_user, login_required
 
 from dg_scenario_database import app, db, login_manager
@@ -116,4 +116,20 @@ def get_tags():
     tags = Tag.query.order_by(Tag.name.asc()).all()
     tag_names = [tag.name for tag in tags]
     return jsonify(tags=tag_names)
+
+@app.route('/tag_table_config', methods=['GET'])
+def get_tag_table_config():
+    config = {
+        'order': [[1, 'asc']],
+        'pageLength': -1,
+        'lengthMenu': [ [20, 50, 100, -1], [20, 50, 100, 'All'] ],
+        'columns': [
+            {'data': 'id', 'visible': False},
+            {'data': 'tag'},
+            {'data': 'scenarios'},
+        ]
+    }
+    if hasattr(current_user, 'is_admin') and current_user.is_admin:
+        config['columns'].append({'data': 'button'})
+    return jsonify(config)
 

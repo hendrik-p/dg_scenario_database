@@ -12,7 +12,9 @@
             <th>ID</th>
             <th>Tag</th>
             <th>Scenarios</th>
+            {% if current_user.is_admin %}
             <th></th>
+            {% endif %}
           </tr>
         </thead>
         <tbody>
@@ -27,11 +29,13 @@
               </div>
               {% endfor %}
             </td>
+            {% if current_user.is_admin %}
             <td>
               <button type="button" class="btn btn-secondary btn-sm">
                 Delete
               </button>
             </td>
+            {% endif %}
           </tr>
           {% endfor %}
         </tbody>
