@@ -14,6 +14,11 @@ def index():
     scenarios = Scenario.query.all()
     return render_template('index.html', scenarios=scenarios)
 
+@app.route('/scenarios', methods=['GET'])
+def scenarios():
+    scenarios = Scenario.query.all()
+    return render_template('index.html', scenarios=scenarios)
+
 @app.route('/add_tag', methods=['POST'])
 @login_required
 def add_tag():
@@ -95,9 +100,20 @@ def login():
     return render_template('login.html', form=form)
 
 @app.route('/logout')
+@login_required
 def logout():
     username = current_user.username
     logout_user()
     app.logger.info(f'Logged out user: {username}')
     return redirect(url_for('index'))
+
+@app.route('/check_login', methods=['GET'])
+def check_login():
+    return jsonify(logged_in=current_user.is_authenticated)
+
+@app.route('/get_tags', methods=['GET'])
+def get_tags():
+    tags = Tag.query.order_by(Tag.name.asc()).all()
+    tag_names = [tag.name for tag in tags]
+    return jsonify(tags=tag_names)
 
