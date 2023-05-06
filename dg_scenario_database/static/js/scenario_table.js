@@ -67,7 +67,9 @@ $(document).ready(function () {
         // Add click event for removing tags
         $('#scenario_table').on('click', '.tag-remove-btn', function () {
           const tag = $(this).closest('.tag');
-          const tagText = tag.text().slice(0, -1)
+          console.log(tag.text());
+          const tagText = tag.text().trim().slice(0, -1).trim();
+          console.log(tagText);
           const tagCell = tag.parent()
           const row = table.row(tagCell.parent())
           const scenario_id = row.data()['id']

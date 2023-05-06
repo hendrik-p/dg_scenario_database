@@ -34,9 +34,6 @@
             <td>{{ scenario.category }}</td>
             <td class="tag_cell">
               {% for tag in scenario.tags %}
-              <!--
-              <div class="tag badge bg-secondary">{{ tag.name }}<span class="tag-remove-btn">x</span></div>
-              -->
               <div class="tag badge bg-secondary">
                 {{ tag.name }}
                 {% if current_user.is_authenticated %}
