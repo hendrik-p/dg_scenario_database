@@ -1,7 +1,7 @@
 from flask import json, render_template, request, jsonify, redirect, url_for, flash
 from flask_login import login_user, current_user, logout_user, login_required
 
-from dg_scenario_database import app, db, login_manager, track_usage
+from dg_scenario_database import app, db, login_manager
 from dg_scenario_database.models import Scenario, Tag, User
 from dg_scenario_database.forms import LoginForm, RegistrationForm, ScenarioSubmissionForm, EditScenarioForm
 
@@ -11,7 +11,6 @@ def load_user(user_id):
 
 # HTML routes
 
-@track_usage.include
 @app.route('/', methods=['GET'])
 def index():
     scenarios = Scenario.query.all()
