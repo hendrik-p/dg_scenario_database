@@ -53,6 +53,7 @@ def submit_scenario():
         db.session.add(scenario)
         db.session.commit()
         flash('Scenario submitted!')
+        app.logger.info(f'Scenario {scenario.title} added by {current_user.username}')
         form = ScenarioSubmissionForm()
     return render_template('submit_scenario.html', form=form)
 
