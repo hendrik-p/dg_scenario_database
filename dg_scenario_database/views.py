@@ -78,6 +78,20 @@ def edit_scenarios():
         return render_template('edit_scenarios.html', scenarios=scenarios, form=form)
     return render_template('edit_scenarios.html', scenarios=scenarios, form=form)
 
+@app.route('/edit_tags', methods=['GET', 'POST'])
+@login_required
+def edit_tags():
+    if not current_user.is_admin:
+        return redirect(url_for('index'))
+    if request.method == 'POST':
+        tag_id = request.values.get('tag_id')
+        tag_name = request.values.get('tag_name')
+        tag = Tag.query.filter_by(id=tag_id).first()
+        tag.name = tag_name
+        db.session.commit()
+    tags = Tag.query.all()
+    return render_template('edit_tags.html', tags=tags)
+
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if current_user.is_authenticated:
