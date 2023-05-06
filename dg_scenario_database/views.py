@@ -1,14 +1,17 @@
 from flask import json, render_template, request, jsonify, redirect, url_for, flash
 from flask_login import login_user, current_user, logout_user, login_required
 
-from dg_scenario_database import app, db, login_manager
+from dg_scenario_database import app, db, login_manager, track_usage
 from dg_scenario_database.models import Scenario, Tag, User
-from dg_scenario_database.forms import LoginForm, RegistrationForm
+from dg_scenario_database.forms import LoginForm, RegistrationForm, ScenarioSubmissionForm, EditScenarioForm
 
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+# HTML routes
+
+@track_usage.include
 @app.route('/', methods=['GET'])
 def index():
     scenarios = Scenario.query.all()
@@ -19,11 +22,97 @@ def scenarios():
     scenarios = Scenario.query.all()
     return render_template('index.html', scenarios=scenarios)
 
+@app.route('/tags')
+def browse_tags():
+    tags = Tag.query.order_by(Tag.name.asc()).all()
+    return render_template('tags.html', tags=tags)
+
+@app.route('/submit_scenario', methods=['GET', 'POST'])
+@login_required
+def submit_scenario():
+    form = ScenarioSubmissionForm()
+    if form.validate_on_submit():
+        scenario = Scenario(
+            title=form.title.data,
+            teaser=form.teaser.data,
+            author=form.author.data,
+            year=str(form.year.data),
+            category=form.category.data,
+            url=form.url.data
+        )
+        db.session.add(scenario)
+        db.session.commit()
+        flash('Scenario submitted!')
+        form = ScenarioSubmissionForm()
+    return render_template('submit_scenario.html', form=form)
+
+@app.route('/edit_scenarios', methods=['GET', 'POST'])
+@login_required
+def edit_scenarios():
+    if not current_user.is_admin:
+        return redirect(url_for('index'))
+    scenarios = Scenario.query.all()
+    form = EditScenarioForm()
+    if form.validate_on_submit():
+        scenario_id = form.scenario_id.data
+        scenario = Scenario.query.filter_by(id=scenario_id).first()
+        scenario.title = form.title.data
+        scenario.teaser = form.teaser.data
+        scenario.author = form.author.data
+        scenario.year = form.year.data
+        scenario.category = form.category.data
+        scenario.url = form.url.data
+        db.session.commit()
+        app.logger.info(f'Scenario {scenario_id} edited by {current_user.username}')
+        return render_template('edit_scenarios.html', scenarios=scenarios, form=form)
+    return render_template('edit_scenarios.html', scenarios=scenarios, form=form)
+
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        user = User(username=form.username.data)
+        user.set_password(form.password.data)
+        db.session.add(user)
+        db.session.commit()
+        app.logger.info(f'Registered new user: {user.username}')
+        login_user(user, remember=True)
+        return redirect(url_for('index'))
+    return render_template('signup.html', form=form)
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=form.username.data).first()
+        if user and user.check_password(form.password.data):
+            login_user(user, remember=form.remember.data)
+            app.logger.info(f'Logged in user: {user.username}')
+            return redirect(url_for('index'))
+        else:
+            flash('Login unsuccessful. Please check your username and password.')
+    return render_template('login.html', form=form)
+
+@app.route('/logout')
+@login_required
+def logout():
+    username = current_user.username
+    logout_user()
+    app.logger.info(f'Logged out user: {username}')
+    return redirect(url_for('index'))
+
+# AJAX routes
+
 @app.route('/add_tag', methods=['POST'])
 @login_required
 def add_tag():
     data = request.get_json()
     tag_name = data['tag']
+    tag_name = tag_name.lower()
     scenario_id = data['scenario_id']
     new_tag = Tag.query.filter_by(name=tag_name).first()
     if not new_tag:
@@ -64,49 +153,6 @@ def remove_tag_from_database():
     app.logger.info(f'Tag "{tag_name}" removed from database by user {current_user.username}')
     return jsonify({'success' : True, 'message' : 'Tag removed successfully from database'})
 
-@app.route('/tags')
-def browse_tags():
-    tags = Tag.query.order_by(Tag.name.asc()).all()
-    return render_template('tags.html', tags=tags)
-
-@app.route('/signup', methods=['GET', 'POST'])
-def signup():
-    if current_user.is_authenticated:
-        return redirect(url_for('index'))
-    form = RegistrationForm()
-    if form.validate_on_submit():
-        user = User(username=form.username.data)
-        user.set_password(form.password.data)
-        db.session.add(user)
-        db.session.commit()
-        app.logger.info(f'Registered new user: {user.username}')
-        login_user(user, remember=True)
-        return redirect(url_for('index'))
-    return render_template('signup.html', form=form)
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if current_user.is_authenticated:
-        return redirect(url_for('index'))
-    form = LoginForm()
-    if form.validate_on_submit():
-        user = User.query.filter_by(username=form.username.data).first()
-        if user and user.check_password(form.password.data):
-            login_user(user, remember=form.remember.data)
-            app.logger.info(f'Logged in user: {user.username}')
-            return redirect(url_for('index'))
-        else:
-            flash('Login unsuccessful. Please check your username and password.')
-    return render_template('login.html', form=form)
-
-@app.route('/logout')
-@login_required
-def logout():
-    username = current_user.username
-    logout_user()
-    app.logger.info(f'Logged out user: {username}')
-    return redirect(url_for('index'))
-
 @app.route('/check_login', methods=['GET'])
 def check_login():
     return jsonify(logged_in=current_user.is_authenticated)
@@ -132,4 +178,32 @@ def get_tag_table_config():
     if hasattr(current_user, 'is_admin') and current_user.is_admin:
         config['columns'].append({'data': 'button'})
     return jsonify(config)
+
+@app.route('/get_scenario', methods=['POST'])
+def get_scenario():
+    data = request.get_json()
+    scenario_id = data['scenario_id']
+    scenario = Scenario.query.filter_by(id=scenario_id).first()
+    json = jsonify(
+        scenario_id=scenario_id,
+        title=scenario.title,
+        teaser=scenario.teaser,
+        author=scenario.author,
+        year=scenario.year,
+        category=scenario.category,
+        url=scenario.url,
+    )
+    return json
+
+@app.route('/delete_scenario', methods=['POST'])
+@login_required
+def delete_scenario():
+    if not current_user.is_admin:
+        return jsonify({'success': False})
+    data = request.get_json()
+    scenario_id = data['scenario_id']
+    Scenario.query.filter_by(id=scenario_id).delete()
+    db.session.commit()
+    app.logger.info(f'Scenario {scenario_id} deleted by user {current_user.username}')
+    return jsonify({'success': True})
 

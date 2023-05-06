@@ -32,6 +32,14 @@
         <li class="nav-item">
           <a class="nav-link" href="{{ url_for('browse_tags') }}">Tags</a>
         </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('submit_scenario') }}">Submit Scenario</a>
+        </li>
+        {% if current_user.is_admin %}
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('edit_scenarios') }}">Edit Scenario</a>
+        </li>
+        {% endif %}
       </ul>
       {% if current_user.is_authenticated %}
       <span class="navbar-text">

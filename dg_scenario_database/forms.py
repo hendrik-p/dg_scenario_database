@@ -1,6 +1,8 @@
+import datetime
+
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, TextAreaField, SubmitField
-from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField, IntegerField
+from wtforms.validators import DataRequired, Length, EqualTo, ValidationError, NumberRange
 
 from dg_scenario_database.models import User
 
@@ -21,4 +23,27 @@ class LoginForm(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired()])
     remember = BooleanField('Remember Me')
     submit = SubmitField('Login')
+
+
+class ScenarioSubmissionForm(FlaskForm):
+    title = StringField('Title', validators=[DataRequired()])
+    teaser = StringField('Teaser')
+    author = StringField('Author', validators=[DataRequired()])
+    current_year = datetime.date.today().year
+    year = IntegerField('Year', validators=[NumberRange(1992, current_year)])
+    category = SelectField('Scenario category', choices=['Official', 'Shotgun', 'Other'], validators=[DataRequired()])
+    url = StringField('URL', validators=[DataRequired()])
+    submit = SubmitField('Submit')
+
+
+class EditScenarioForm(FlaskForm):
+    scenario_id = IntegerField('ID', validators=[DataRequired()])
+    title = StringField('Title', validators=[DataRequired()])
+    teaser = StringField('Teaser')
+    author = StringField('Author', validators=[DataRequired()])
+    current_year = datetime.date.today().year
+    year = IntegerField('Year', validators=[NumberRange(1992, current_year)])
+    category = SelectField('Scenario category', choices=['Official', 'Shotgun', 'Other'], validators=[DataRequired()])
+    url = StringField('URL', validators=[DataRequired()])
+    submit = SubmitField('Edit')
 
