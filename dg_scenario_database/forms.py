@@ -33,6 +33,7 @@ class ScenarioSubmissionForm(FlaskForm):
     year = IntegerField('Year', validators=[NumberRange(1992, current_year)])
     category = SelectField('Scenario category', choices=['Official', 'Shotgun', 'Other'], validators=[DataRequired()])
     url = StringField('URL', validators=[DataRequired()])
+    tags = StringField('Tags')
     submit = SubmitField('Submit')
 
 

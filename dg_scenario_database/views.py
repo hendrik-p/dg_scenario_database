@@ -31,13 +31,24 @@ def browse_tags():
 def submit_scenario():
     form = ScenarioSubmissionForm()
     if form.validate_on_submit():
+        tag_string = form.tags.data
+        tag_names = [t.strip() for t in tag_string.split(',') if t.strip()]
+        tags = []
+        for tag_name in tag_names:
+            tag = Tag.query.filter_by(name=tag_name).first()
+            if not tag:
+                tag = Tag(name=tag_name)
+                db.session.add(tag)
+                db.session.commit()
+            tags.append(tag)
         scenario = Scenario(
             title=form.title.data,
             teaser=form.teaser.data,
             author=form.author.data,
             year=str(form.year.data),
             category=form.category.data,
-            url=form.url.data
+            url=form.url.data,
+            tags=tags
         )
         db.session.add(scenario)
         db.session.commit()
