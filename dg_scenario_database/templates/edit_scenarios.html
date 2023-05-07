@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<div class="container mt-3">
 <form method="POST" action="{{ url_for('edit_scenarios') }}">
   {{ form.hidden_tag() }}
   <div class="form-group row">
@@ -103,6 +104,7 @@
     {% endfor %}
   </tbody>
 </table>
+</div>
 
 <script>
   function fillEditForm (id) {
