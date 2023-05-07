@@ -33,7 +33,11 @@
 
   <nav class="navbar navbar-expand-md navbar-light bg-light">
     <div class="container">
-      <a class="navbar-brand" href="{{ url_for('index') }}">DG Scenario Database</a>
+      <a class="navbar-brand" href="{{ url_for('index') }}">
+        <svg height="32" width="32">
+            <polygon points="16,4 4,28 28,28" class="header_delta" />
+        </svg>
+        <span>DG Scenario Database</span></a>
       <ul class="navbar-nav me-auto">
         <li class="nav-item">
           <a class="nav-link" href="{{ url_for('scenarios') }}">Scenarios</a>
