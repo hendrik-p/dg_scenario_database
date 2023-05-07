@@ -2,7 +2,7 @@ from flask import json, render_template, request, jsonify, redirect, url_for, fl
 from flask_login import login_user, current_user, logout_user, login_required
 
 from dg_scenario_database import app, db, login_manager
-from dg_scenario_database.models import Scenario, Tag, User
+from dg_scenario_database.models import Scenario, Tag, Upvote, User
 from dg_scenario_database.forms import LoginForm, RegistrationForm, ScenarioSubmissionForm, EditScenarioForm
 
 @login_manager.user_loader
@@ -14,7 +14,12 @@ def load_user(user_id):
 @app.route('/', methods=['GET'])
 def index():
     scenarios = Scenario.query.all()
-    return render_template('index.html', scenarios=scenarios)
+    if current_user.is_authenticated:
+        upvotes = Upvote.query.filter_by(user_id=current_user.id).all()
+        upvote_ids = [upvote.scenario_id for upvote in upvotes]
+    else:
+        upvote_ids = []
+    return render_template('index.html', scenarios=scenarios, upvotes=upvote_ids)
 
 @app.route('/scenarios', methods=['GET'])
 def scenarios():
@@ -230,5 +235,29 @@ def delete_scenario():
     Scenario.query.filter_by(id=scenario_id).delete()
     db.session.commit()
     app.logger.info(f'Scenario {scenario_id} deleted by user {current_user.username}')
+    return jsonify({'success': True})
+
+@app.route('/vote', methods=['POST'])
+@login_required
+def vote():
+    data = request.get_json()
+    scenario_id = data['scenario_id']
+    scenario = Scenario.query.filter_by(id=scenario_id).first()
+    if data['vote'] == 'add':
+        existing = Upvote.query.filter_by(user_id=current_user.id).all()
+        for vote in existing:
+            if vote.scenario_id == scenario_id:
+                return jsonify({'success': False})
+        upvote = Upvote(user_id=current_user.id, scenario_id=scenario.id)
+        db.session.add(upvote)
+        db.session.commit()
+        app.logger.info(f'User {current_user.username} voted for scenario {scenario_id}')
+    elif data['vote'] == 'remove':
+        upvote = Upvote.query.filter_by(user_id=current_user.id, scenario_id=scenario_id)
+        if not upvote:
+            return jsonify({'success': False})
+        upvote.delete()
+        db.session.commit()
+        app.logger.info(f'User {current_user.username} removed vote for scenario {scenario_id}')
     return jsonify({'success': True})
 

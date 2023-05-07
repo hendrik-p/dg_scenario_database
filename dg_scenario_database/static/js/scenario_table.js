@@ -43,6 +43,7 @@ $(document).ready(function () {
       {data: "year"},
       {data: "type"},
       {data: "tags"},
+      {data: "votes"},
     ]
   });
 
@@ -141,6 +142,58 @@ $(document).ready(function () {
                 const row = table.row($(this).parents('tr'));
                 const id = row.data()['id'];
                 addTag($(this), newTag, id);
+              }
+            });
+          }
+        });
+
+        // add click event for upvoting
+        $('#scenario_table').on('click', '.upvote_delta', function () {
+          row = table.row($(this).parents('tr'));
+          scenario_id = row.data()['id'];
+          const count = $(this).parents('.upvote_field').children('.upvote_count');
+          if (!$(this).hasClass('upvoted')) {
+            // add vote
+            $(this).addClass('upvoted');
+            count.html(parseInt(count.html()) + 1);
+            $.ajax({
+              url: '/vote',
+              method: 'POST',
+              contentType: 'application/json',
+              data: JSON.stringify({
+                scenario_id: scenario_id,
+                vote: 'add'
+              }),
+              success: function (response) {
+                if (!response.success) {
+                  console.error('Upvote unsuccesfull');
+                } else {
+                }
+              },
+              error: function (jqXHR, textStatus, errorThrown) {
+                console.error('AJAX error:', textStatus, errorThrown);
+              }
+            });
+          } else {
+            // remove vote
+            $(this).removeClass('upvoted');
+            count.html(parseInt(count.html()) - 1);
+            $.ajax({
+              url: '/vote',
+              method: 'POST',
+              contentType: 'application/json',
+              data: JSON.stringify({
+                scenario_id: scenario_id,
+                vote: 'remove'
+              }),
+              success: function (response) {
+                if (!response.success) {
+                  console.error('Removal unsuccesfull');
+                } else {
+                }
+              },
+              error: function (jqXHR, textStatus, errorThrown) {
+                console.error('AJAX error:', textStatus, errorThrown);
               }
             });
           }

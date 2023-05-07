@@ -27,6 +27,8 @@ class Scenario(db.Model):
         back_populates='scenarios'
     )
 
+    upvotes = db.relationship('Upvote', backref='scenario', lazy='dynamic')
+
 
 class Tag(db.Model):
 
@@ -44,10 +46,14 @@ class Tag(db.Model):
 
 class User(UserMixin, db.Model):
 
+    __tablename__ = 'user'
+
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), unique=True)
     password_hash = db.Column(db.String(128))
     is_admin = db.Column(db.Boolean, server_default='0', nullable=False)
+
+    upvotes = db.relationship('Upvote', backref='user', lazy='dynamic')
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -57,3 +63,13 @@ class User(UserMixin, db.Model):
 
     def __repr__(self):
         return f'<User {self.username}>'
+
+
+class Upvote(db.Model):
+
+    __tablename__ = 'upvotes'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    scenario_id = db.Column(db.Integer, db.ForeignKey('scenarios.id'))
+

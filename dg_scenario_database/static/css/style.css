@@ -70,3 +70,18 @@
   margin-right: 8px;
 }
 
+.header_delta {
+  fill: transparent;
+  stroke: green;
+  stroke-width: 4;
+}
+
+.upvote_delta {
+  fill: transparent;
+  stroke: grey;
+  stroke-width: 2;
+}
+
+.upvoted {
+  stroke: green;
+}
