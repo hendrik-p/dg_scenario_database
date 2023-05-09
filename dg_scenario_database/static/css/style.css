@@ -89,3 +89,11 @@
 .upvoted {
   stroke: green;
 }
+
+.scenario_link {
+  color: #2e8b57;
+}
+
+.scenario_link:hover {
+  color: #245f46;
+}
