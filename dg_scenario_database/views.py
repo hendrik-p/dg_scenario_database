@@ -67,40 +67,7 @@ def submit_scenario():
         form = ScenarioSubmissionForm()
     return render_template('submit_scenario.html', form=form)
 
-@app.route('/edit_scenarios', methods=['GET', 'POST'])
-@login_required
-def edit_scenarios():
-    if not current_user.is_admin:
-        return redirect(url_for('index'))
-    scenarios = Scenario.query.all()
-    form = EditScenarioForm()
-    if form.validate_on_submit():
-        scenario_id = form.scenario_id.data
-        scenario = Scenario.query.filter_by(id=scenario_id).first()
-        scenario.title = form.title.data
-        scenario.teaser = form.teaser.data
-        scenario.author = form.author.data
-        scenario.year = form.year.data
-        scenario.category = form.category.data
-        scenario.url = form.url.data
-        db.session.commit()
-        app.logger.info(f'Scenario {scenario_id} edited by {current_user.username}')
-        return render_template('edit_scenarios.html', scenarios=scenarios, form=form)
-    return render_template('edit_scenarios.html', scenarios=scenarios, form=form)
-
-@app.route('/edit_tags', methods=['GET', 'POST'])
-@login_required
-def edit_tags():
-    if not current_user.is_admin:
-        return redirect(url_for('index'))
-    if request.method == 'POST':
-        tag_id = request.values.get('tag_id')
-        tag_name = request.values.get('tag_name')
-        tag = Tag.query.filter_by(id=tag_id).first()
-        tag.name = tag_name
-        db.session.commit()
-    tags = Tag.query.all()
-    return render_template('edit_tags.html', tags=tags)
+# login, logout, registration
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -139,6 +106,55 @@ def logout():
     logout_user()
     app.logger.info(f'Logged out user: {username}')
     return redirect(url_for('index'))
+
+# admin routes
+
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    if not current_user.is_admin:
+        return redirect(url_for('index'))
+    return render_template('dashboard.html')
+
+@app.route('/edit_scenarios', methods=['GET', 'POST'])
+@login_required
+def edit_scenarios():
+    if not current_user.is_admin:
+        return redirect(url_for('index'))
+    scenarios = Scenario.query.all()
+    form = EditScenarioForm()
+    if form.validate_on_submit():
+        scenario_id = form.scenario_id.data
+        scenario = Scenario.query.filter_by(id=scenario_id).first()
+        scenario.title = form.title.data
+        scenario.teaser = form.teaser.data
+        scenario.author = form.author.data
+        scenario.year = form.year.data
+        scenario.category = form.category.data
+        scenario.url = form.url.data
+        db.session.commit()
+        app.logger.info(f'Scenario {scenario_id} edited by {current_user.username}')
+        return render_template('edit_scenarios.html', scenarios=scenarios, form=form)
+    return render_template('edit_scenarios.html', scenarios=scenarios, form=form)
+
+@app.route('/edit_tags', methods=['GET', 'POST'])
+@login_required
+def edit_tags():
+    if not current_user.is_admin:
+        return redirect(url_for('index'))
+    if request.method == 'POST':
+        tag_id = request.values.get('tag_id')
+        tag_name = request.values.get('tag_name')
+        tag = Tag.query.filter_by(id=tag_id).first()
+        tag.name = tag_name
+        db.session.commit()
+    tags = Tag.query.all()
+    return render_template('edit_tags.html', tags=tags)
+
+@app.route('/show_users')
+def show_users():
+    users = User.query.all()
+    return render_template('show_users.html', users=users)
 
 # AJAX routes
 
