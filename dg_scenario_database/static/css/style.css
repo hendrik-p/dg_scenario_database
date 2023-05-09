@@ -82,6 +82,10 @@
   stroke-width: 2;
 }
 
+.upvote_delta:hover {
+        cursor: pointer;
+}
+
 .upvoted {
   stroke: green;
 }
