@@ -1,4 +1,4 @@
-from flask import json, render_template, request, jsonify, redirect, url_for, flash
+from flask import render_template, request, jsonify, redirect, url_for, flash, send_from_directory
 from flask_login import login_user, current_user, logout_user, login_required
 
 from dg_scenario_database import app, db, login_manager
@@ -10,6 +10,11 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 # HTML routes
+
+@app.route('/robots.txt')
+@app.route('/sitemap.xml')
+def static_from_root():
+    return send_from_directory(app.static_folder, request.path[1:])
 
 @app.route('/', methods=['GET'])
 def index():
