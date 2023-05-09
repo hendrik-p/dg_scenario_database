@@ -17,6 +17,7 @@ def static_from_root():
     return send_from_directory(app.static_folder, request.path[1:])
 
 @app.route('/', methods=['GET'])
+@app.route('/scenarios', methods=['GET'])
 def index():
     scenarios = Scenario.query.all()
     if current_user.is_authenticated:
@@ -25,11 +26,6 @@ def index():
     else:
         upvote_ids = []
     return render_template('index.html', scenarios=scenarios, upvotes=upvote_ids)
-
-@app.route('/scenarios', methods=['GET'])
-def scenarios():
-    scenarios = Scenario.query.all()
-    return render_template('index.html', scenarios=scenarios)
 
 @app.route('/tags')
 def browse_tags():
@@ -64,7 +60,7 @@ def submit_scenario():
         db.session.commit()
         flash('Scenario submitted!')
         app.logger.info(f'Scenario {scenario.title} added by {current_user.username}')
-        form = ScenarioSubmissionForm()
+        return redirect(url_for('submit_scenario'))
     return render_template('submit_scenario.html', form=form)
 
 # login, logout, registration
