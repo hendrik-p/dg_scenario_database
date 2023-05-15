@@ -44,11 +44,12 @@ $(document).ready(function () {
 		dom: "<'row'<'col-sm-12 col-md-4'l><'col-sm-12 col-md-4 category-dropdown-wrapper'<'category-label'><'category-dropdown'>><'col-sm-12 col-md-4'f>>" +
 		"<'row'<'col-sm-12'tr>>" +
 		"<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
-		processing: true,
+		processing: false,
 		serverSide: true,
     order: [[4, "asc"], [1, "asc"]],
 		pagingType: "full_numbers",
 		lengthMenu: [ [20, 50, 100, -1], [20, 50, 100, "All"] ],
+    pageLength: 50,
 		jQueryUI: true,
 		ajax: {
 			url: '/get_scenario_data',
@@ -88,7 +89,7 @@ $(document).ready(function () {
 		createdRow: function (row, data, dataIndex) {
 			var tagsCell = $(row).find('td:eq(5)');
 			tagsCell.addClass('tag_cell');
-		}
+		},
 	});
 
   $('#category-filter').on('change', function () {
