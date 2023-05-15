@@ -1,3 +1,5 @@
+# adapted from: https://github.com/SergioLlana/datatables-flask-serverside/tree/master
+
 SERVERSIDE_TABLE_COLUMNS = [
     {
         'data_name' : 'id',
