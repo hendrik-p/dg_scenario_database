@@ -46,6 +46,7 @@ $(document).ready(function () {
 		"<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
 		processing: true,
 		serverSide: true,
+    order: [[4, "asc"], [1, "asc"]],
 		pagingType: "full_numbers",
 		lengthMenu: [ [20, 50, 100, -1], [20, 50, 100, "All"] ],
 		jQueryUI: true,
