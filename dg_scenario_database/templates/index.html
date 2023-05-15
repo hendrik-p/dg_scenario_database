@@ -24,44 +24,6 @@
             <th>Votes</th>
           </tr>
         </thead>
-        <!--
-        <tbody>
-          {% for scenario in scenarios %}
-          <tr>
-            <td>{{ scenario.id }}</td>
-            <td><a href="{{ scenario.url }}" class="scenario_link">{{ scenario.title }}</a></td>
-            <td>{{ scenario.teaser }}</td>
-            <td>{{ scenario.author }}</td>
-            <td>{{ scenario.year }}</td>
-            <td>{{ scenario.category }}</td>
-            <td class="tag_cell">
-              {% for tag in scenario.tags %}
-              <div class="tag badge bg-secondary">
-                {{ tag.name }}
-                {% if current_user.is_authenticated %}
-                <span class="tag-remove-btn">x</span>
-                {% endif %}
-              </div>
-              {% endfor %}
-            </td>
-            <td>
-              <div class="row upvote_field">
-                <div class="col-auto upvote_count">
-                  {{ scenario.upvotes.all() | length }}
-                </div>
-                {% if current_user.is_authenticated %}
-                <div class="col text-right">
-                  <svg height="16" width="16">
-                    <polygon points="8,1 1,15 15,15" class="upvote_delta {% if scenario.id in upvotes %}upvoted{% endif %}"/>
-                  </svg>
-                </div>
-                {% endif %}
-              </div>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-        -->
       </table>
     </div>
   </div>

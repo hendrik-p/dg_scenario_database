@@ -95,6 +95,9 @@ $(document).ready(function () {
     table.ajax.reload();
   })
 
+  $('.category-label').text('Categories displayed: ');
+  $('#category-filter').appendTo('.category-dropdown'); // add dropdown to table header
+
   if (loggedIn) {
     // Add click event for removing tags
     $('#scenario_table').on('click', '.tag-remove-btn', function () {
