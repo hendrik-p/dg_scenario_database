@@ -27,6 +27,11 @@
                 existingTags = response.tags;
           }
     });
+    {% if current_user.is_authenticated %}
+    const loggedIn = true;
+    {% else %}
+    const loggedIn = false;
+    {% endif %}
   </script>
 </head>
 <body>

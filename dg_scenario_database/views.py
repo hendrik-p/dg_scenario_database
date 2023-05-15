@@ -278,3 +278,36 @@ def vote():
         app.logger.info(f'User {current_user.username} removed vote for scenario {scenario_id}')
     return jsonify({'success': True})
 
+
+from dg_scenario_database.serverside_table import ServerSideTable
+import dg_scenario_database.table_schemas as table_schemas
+
+@app.route('/get_scenario_data')
+def get_scenario_data():
+    selected_category = request.values['selected_category']
+    if selected_category == 'All':
+        scenarios = Scenario.query.all()
+    else:
+        scenarios = Scenario.query.filter_by(category=selected_category).all()
+    scenario_data = []
+    for scenario in scenarios:
+        upvotes = Upvote.query.filter_by(scenario_id=scenario.id).all()
+        n_votes = len(upvotes)
+        upvoted = False
+        if current_user.is_authenticated:
+            upvoted = (current_user.id in [vote.user_id for vote in upvotes])
+        scenario_link = f'<a href="{scenario.url}" class="scenario_link">{scenario.title}</a>'
+        d = {
+            'id' : scenario.id,
+            'title' : scenario_link,
+            'teaser' : scenario.teaser,
+            'author' : scenario.author,
+            'year' : scenario.year,
+            'category' : scenario.category,
+            'tags' : [tag.name for tag in scenario.tags],
+            'votes' : [n_votes, upvoted],
+        }
+        scenario_data.append(d)
+    columns = table_schemas.SERVERSIDE_TABLE_COLUMNS
+    return jsonify(ServerSideTable(request, scenario_data, columns).output_result())
+
