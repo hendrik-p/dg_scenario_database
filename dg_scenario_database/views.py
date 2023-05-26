@@ -308,6 +308,11 @@ def get_scenario_data():
             'votes' : [n_votes, upvoted],
         }
         scenario_data.append(d)
+    app.logger.info(
+        'Data requested. Category: {} Search value: {}'.format(
+            selected_category, request.values.get('search[value]', '')
+        )
+    )
     columns = table_schemas.SERVERSIDE_TABLE_COLUMNS
     return jsonify(ServerSideTable(request, scenario_data, columns).output_result())
 
