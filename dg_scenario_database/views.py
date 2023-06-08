@@ -25,16 +25,25 @@ def index():
         upvote_ids = [upvote.scenario_id for upvote in upvotes]
     else:
         upvote_ids = []
+    username = ''
+    if current_user.is_authenticated:
+        username = current_user.username
+    app.logger.info(f'Scenario site loaded. User: {username}, IP: {request.remote_addr}')
     return render_template('index.html', scenarios=scenarios, upvotes=upvote_ids)
 
 @app.route('/tags')
 def browse_tags():
+    username = ''
+    if current_user.is_authenticated:
+        username = current_user.username
     tags = Tag.query.order_by(Tag.name.asc()).all()
+    app.logger.info(f'Tag site loaded. User: {username}, IP: {request.remote_addr}')
     return render_template('tags.html', tags=tags)
 
 @app.route('/submit_scenario', methods=['GET', 'POST'])
 @login_required
 def submit_scenario():
+    tags = Tag.query.order_by(Tag.name.asc()).all()
     form = ScenarioSubmissionForm()
     if form.validate_on_submit():
         tag_string = form.tags.data
@@ -61,6 +70,10 @@ def submit_scenario():
         flash('Scenario submitted!')
         app.logger.info(f'Scenario {scenario.title} added by {current_user.username}')
         return redirect(url_for('submit_scenario'))
+    username = ''
+    if current_user.is_authenticated:
+        username = current_user.username
+    app.logger.info(f'Scenario submission site loaded. User: {username}, IP: {request.remote_addr}')
     return render_template('submit_scenario.html', form=form)
 
 # login, logout, registration
@@ -260,6 +273,7 @@ def vote():
     data = request.get_json()
     scenario_id = data['scenario_id']
     scenario = Scenario.query.filter_by(id=scenario_id).first()
+    scenario_name = scenario.title
     if data['vote'] == 'add':
         existing = Upvote.query.filter_by(user_id=current_user.id).all()
         for vote in existing:
@@ -268,14 +282,14 @@ def vote():
         upvote = Upvote(user_id=current_user.id, scenario_id=scenario.id)
         db.session.add(upvote)
         db.session.commit()
-        app.logger.info(f'User {current_user.username} voted for scenario {scenario_id}')
+        app.logger.info(f'User {current_user.username} voted for scenario {scenario_id}. Title: {scenario_name}')
     elif data['vote'] == 'remove':
         upvote = Upvote.query.filter_by(user_id=current_user.id, scenario_id=scenario_id)
         if not upvote:
             return jsonify({'success': False})
         upvote.delete()
         db.session.commit()
-        app.logger.info(f'User {current_user.username} removed vote for scenario {scenario_id}')
+        app.logger.info(f'User {current_user.username} removed vote for scenario {scenario_id}. Title: {scenario_name}')
     return jsonify({'success': True})
 
 
@@ -308,9 +322,12 @@ def get_scenario_data():
             'votes' : [n_votes, upvoted],
         }
         scenario_data.append(d)
+    username = ''
+    if current_user.is_authenticated:
+        username = current_user.username
     app.logger.info(
-        'Data requested. Category: {} Search value: {}'.format(
-            selected_category, request.values.get('search[value]', '')
+        'Data requested. IP: {} User: {} Category: {} Search value: {}'.format(
+           request.remote_addr, username, selected_category, request.values.get('search[value]', '')
         )
     )
     columns = table_schemas.SERVERSIDE_TABLE_COLUMNS
