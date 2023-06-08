@@ -28,7 +28,8 @@ def index():
     username = ''
     if current_user.is_authenticated:
         username = current_user.username
-    app.logger.info(f'Scenario site loaded. User: {username}, IP: {request.remote_addr}')
+    ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    app.logger.info(f'Scenario site loaded. User: {username}, IP: {ip}')
     return render_template('index.html', scenarios=scenarios, upvotes=upvote_ids)
 
 @app.route('/tags')
@@ -37,7 +38,8 @@ def browse_tags():
     if current_user.is_authenticated:
         username = current_user.username
     tags = Tag.query.order_by(Tag.name.asc()).all()
-    app.logger.info(f'Tag site loaded. User: {username}, IP: {request.remote_addr}')
+    ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    app.logger.info(f'Tag site loaded. User: {username}, IP: {ip}')
     return render_template('tags.html', tags=tags)
 
 @app.route('/submit_scenario', methods=['GET', 'POST'])
@@ -73,7 +75,8 @@ def submit_scenario():
     username = ''
     if current_user.is_authenticated:
         username = current_user.username
-    app.logger.info(f'Scenario submission site loaded. User: {username}, IP: {request.remote_addr}')
+    ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    app.logger.info(f'Scenario submission site loaded. User: {username}, IP: {ip}')
     return render_template('submit_scenario.html', form=form)
 
 @app.route('/about')
@@ -329,9 +332,10 @@ def get_scenario_data():
     username = ''
     if current_user.is_authenticated:
         username = current_user.username
+    ip = request.headers.get('X-Forwarded-For', request.remote_addr)
     app.logger.info(
         'Data requested. IP: {} User: {} Category: {} Search value: {}'.format(
-           request.remote_addr, username, selected_category, request.values.get('search[value]', '')
+           ip, username, selected_category, request.values.get('search[value]', '')
         )
     )
     columns = table_schemas.SERVERSIDE_TABLE_COLUMNS
