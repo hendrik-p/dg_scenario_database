@@ -76,6 +76,10 @@ def submit_scenario():
     app.logger.info(f'Scenario submission site loaded. User: {username}, IP: {request.remote_addr}')
     return render_template('submit_scenario.html', form=form)
 
+@app.route('/about')
+def about():
+    return render_template('about.html')
+
 # login, logout, registration
 
 @app.route('/signup', methods=['GET', 'POST'])
