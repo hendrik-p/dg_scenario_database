@@ -1,9 +1,11 @@
+import os
+
 from flask import render_template, request, jsonify, redirect, url_for, flash, send_from_directory
 from flask_login import login_user, current_user, logout_user, login_required
 
 from dg_scenario_database import app, db, login_manager
 from dg_scenario_database.models import Scenario, Tag, Upvote, User
-from dg_scenario_database.forms import LoginForm, RegistrationForm, ScenarioSubmissionForm, EditScenarioForm
+from dg_scenario_database.forms import LoginForm, RegistrationForm, ScenarioSubmissionForm, EditScenarioForm, CsvUploadForm
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -171,6 +173,49 @@ def edit_tags():
 def show_users():
     users = User.query.all()
     return render_template('show_users.html', users=users)
+
+@app.route('/submit_bulk', methods=['GET', 'POST'])
+@login_required
+def submit_bulk():
+    if not current_user.is_admin:
+        return redirect(url_for('index'))
+    form = CsvUploadForm()
+    if form.validate_on_submit():
+        f = form.csv_file.data
+        f.save('bulk.csv')
+        with open('bulk.csv') as csv_file:
+            for line in csv_file:
+                fields = line.split('\t')
+                title = fields[0]
+                url = fields[1]
+                teaser = fields[2]
+                author = fields[3]
+                year = fields[4]
+                category = fields[5]
+                tag_string = fields[6]
+                tag_names = [t.strip() for t in tag_string.split(',') if t.strip()]
+                tags = []
+                for tag_name in tag_names:
+                    tag = Tag.query.filter_by(name=tag_name).first()
+                    if not tag:
+                        tag = Tag(name=tag_name)
+                        db.session.add(tag)
+                        db.session.commit()
+                    tags.append(tag)
+                scenario = Scenario(
+                    title=title,
+                    teaser=teaser,
+                    author=author,
+                    year=year,
+                    category=category,
+                    url=url,
+                    tags=tags
+                )
+                db.session.add(scenario)
+                db.session.commit()
+        os.remove('bulk.csv')
+        return render_template('submit_bulk.html', form=form)
+    return render_template('submit_bulk.html', form=form)
 
 # AJAX routes
 

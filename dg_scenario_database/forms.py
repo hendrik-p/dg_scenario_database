@@ -1,6 +1,7 @@
 import datetime
 
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileField, FileRequired
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField, IntegerField
 from wtforms.validators import DataRequired, Length, EqualTo, ValidationError, NumberRange
 
@@ -47,4 +48,9 @@ class EditScenarioForm(FlaskForm):
     category = SelectField('Scenario category', choices=['Official', 'Shotgun', 'Other'], validators=[DataRequired()])
     url = StringField('URL', validators=[DataRequired()])
     submit = SubmitField('Edit')
+
+
+class CsvUploadForm(FlaskForm):
+    csv_file = FileField(validators=[FileRequired()])
+    submit = SubmitField('Upload')
 
