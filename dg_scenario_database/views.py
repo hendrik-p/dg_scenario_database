@@ -31,7 +31,8 @@ def index():
     if current_user.is_authenticated:
         username = current_user.username
     ip = request.headers.get('X-Forwarded-For', request.remote_addr)
-    app.logger.info(f'Scenario site loaded. User: {username}, IP: {ip}')
+    referrer = request.referrer
+    app.logger.info(f'Scenario site loaded. User: {username}, IP: {ip}, Referrer: {referrer}')
     return render_template('index.html', scenarios=scenarios, upvotes=upvote_ids)
 
 @app.route('/tags')
@@ -41,7 +42,8 @@ def browse_tags():
         username = current_user.username
     tags = Tag.query.order_by(Tag.name.asc()).all()
     ip = request.headers.get('X-Forwarded-For', request.remote_addr)
-    app.logger.info(f'Tag site loaded. User: {username}, IP: {ip}')
+    referrer = request.referrer
+    app.logger.info(f'Tag site loaded. User: {username}, IP: {ip}, Referrer: {referrer}')
     return render_template('tags.html', tags=tags)
 
 @app.route('/submit_scenario', methods=['GET', 'POST'])
@@ -83,6 +85,12 @@ def submit_scenario():
 
 @app.route('/about')
 def about():
+    username = ''
+    if current_user.is_authenticated:
+        username = current_user.username
+    ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    referrer = request.referrer
+    app.logger.info(f'About page loaded. User: {username}, IP: {ip}, Referrer: {referrer}')
     return render_template('about.html')
 
 # login, logout, registration
