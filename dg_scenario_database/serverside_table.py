@@ -84,7 +84,7 @@ class ServerSideTable(object):
             for i in range(len(self.columns)):
                 if self.columns[i]['searchable']:
                     value = row[self.columns[i]['column_name']]
-                    regex = '(?i)' + self.request_values['search[value]']
+                    regex = '(?i)' + re.escape(self.request_values['search[value]'])
                     if re.compile(regex).search(str(value)):
                         return True
             return False
