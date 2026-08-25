@@ -79,18 +79,19 @@ class ServerSideTable(object):
         Returns:
             Filtered data.
         '''
-        def check_row(row):
+        def check_row(row, pattern):
             ''' Checks whether a row should be displayed or not. '''
             for i in range(len(self.columns)):
                 if self.columns[i]['searchable']:
                     value = row[self.columns[i]['column_name']]
-                    regex = '(?i)' + re.escape(self.request_values['search[value]'])
-                    if re.compile(regex).search(str(value)):
+                    if pattern.search(str(value)):
                         return True
             return False
 
-        if self.request_values.get('search[value]', ""):
-            return [row for row in data if check_row(row)]
+        search_value = self.request_values.get('search[value]', "")
+        if search_value:
+            pattern = re.compile('(?i)' + re.escape(search_value))
+            return [row for row in data if check_row(row, pattern)]
         else:
             return data
 
