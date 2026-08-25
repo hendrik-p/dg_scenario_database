@@ -2,6 +2,8 @@ import os
 
 from flask import render_template, request, jsonify, redirect, url_for, flash, send_from_directory
 from flask_login import login_user, current_user, logout_user, login_required
+from sqlalchemy import func
+from sqlalchemy.orm import selectinload
 
 from dg_scenario_database import app, db, login_manager
 from dg_scenario_database.models import Scenario, Tag, Upvote, User
@@ -21,19 +23,13 @@ def static_from_root():
 @app.route('/', methods=['GET'])
 @app.route('/scenarios', methods=['GET'])
 def index():
-    scenarios = Scenario.query.all()
-    if current_user.is_authenticated:
-        upvotes = Upvote.query.filter_by(user_id=current_user.id).all()
-        upvote_ids = [upvote.scenario_id for upvote in upvotes]
-    else:
-        upvote_ids = []
     username = ''
     if current_user.is_authenticated:
         username = current_user.username
     ip = request.headers.get('X-Forwarded-For', request.remote_addr)
     referrer = request.referrer
     app.logger.info(f'Scenario site loaded. User: {username}, IP: {ip}, Referrer: {referrer}')
-    return render_template('index.html', scenarios=scenarios, upvotes=upvote_ids)
+    return render_template('index.html')
 
 @app.route('/tags')
 def browse_tags():
@@ -359,17 +355,29 @@ import dg_scenario_database.table_schemas as table_schemas
 @app.route('/get_scenario_data')
 def get_scenario_data():
     selected_category = request.values['selected_category']
-    if selected_category == 'All':
-        scenarios = Scenario.query.all()
-    else:
-        scenarios = Scenario.query.filter_by(category=selected_category).all()
+    query = Scenario.query.options(selectinload(Scenario.tags))
+    if selected_category != 'All':
+        query = query.filter_by(category=selected_category)
+    scenarios = query.all()
+
+    vote_counts = dict(
+        db.session.query(Upvote.scenario_id, func.count(Upvote.id))
+        .group_by(Upvote.scenario_id)
+        .all()
+    )
+    user_upvoted_ids = set()
+    if current_user.is_authenticated:
+        user_upvoted_ids = {
+            scenario_id for (scenario_id,) in
+            db.session.query(Upvote.scenario_id)
+            .filter_by(user_id=current_user.id)
+            .all()
+        }
+
     scenario_data = []
     for scenario in scenarios:
-        upvotes = Upvote.query.filter_by(scenario_id=scenario.id).all()
-        n_votes = len(upvotes)
-        upvoted = False
-        if current_user.is_authenticated:
-            upvoted = (current_user.id in [vote.user_id for vote in upvotes])
+        n_votes = vote_counts.get(scenario.id, 0)
+        upvoted = scenario.id in user_upvoted_ids
         scenario_link = f'<a href="{scenario.url}" class="scenario_link">{scenario.title}</a>'
         d = {
             'id' : scenario.id,
