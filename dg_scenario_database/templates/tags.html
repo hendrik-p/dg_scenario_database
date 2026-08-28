@@ -10,7 +10,7 @@
   <div class="row mt-5">
     <div class="col">
 
-      <table id="tag_table" class="table table-bordered table-striped table-hover" style="width:100%">
+      <table id="tag_table" class="table" style="width:100%">
         <thead>
           <tr>
             <th>ID</th>
@@ -25,16 +25,17 @@
           {% for tag in tags %}
           <tr>
             <td>{{ tag.id }}</td>
-            <td>{{ tag.name }}</td>
-            <td>
+            <td class="tag-cell">
+              <div class="tag-name">{{ tag.name }}</div>
+              <div class="scenarios-count">{{ tag.scenarios|length }} scenario{{ 's' if tag.scenarios|length != 1 else '' }}</div>
+            </td>
+            <td class="scenarios-cell">
               {% for scenario in tag.scenarios %}
-              <div class="scenario badge bg-secondary">
-              <a href="{{ scenario.url }}">{{ scenario.title }}</a>
-              </div>
+              <a href="{{ scenario.url }}" class="scenario-pill">{{ scenario.title }}</a>
               {% endfor %}
             </td>
             {% if current_user.is_admin %}
-            <td>
+            <td class="button-cell">
               <button type="button" class="btn btn-secondary btn-sm">
                 Delete
               </button>
