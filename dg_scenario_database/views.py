@@ -1,6 +1,7 @@
 import os
 
 from flask import render_template, request, jsonify, redirect, url_for, flash, send_from_directory
+from markupsafe import escape
 from flask_login import login_user, current_user, logout_user, login_required
 from sqlalchemy import func
 from sqlalchemy.orm import selectinload
@@ -378,7 +379,7 @@ def get_scenario_data():
     for scenario in scenarios:
         n_votes = vote_counts.get(scenario.id, 0)
         upvoted = scenario.id in user_upvoted_ids
-        scenario_link = f'<a href="{scenario.url}" class="scenario_link">{scenario.title}</a>'
+        scenario_link = f'<a href="{escape(scenario.url)}" class="scenario_link">{escape(scenario.title)}</a>'
         d = {
             'id' : scenario.id,
             'title' : scenario_link,

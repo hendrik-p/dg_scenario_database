@@ -14,8 +14,13 @@ const sortOptions = [
 ];
 const DEFAULT_SORT_INDEX = 4; // Year (oldest first) - matches the table's initial order
 
+// Escapes a value for safe insertion into HTML built via string concatenation.
+function escapeHtml(value) {
+  return $('<div>').text(value).html();
+}
+
 function getTagHTML(tag) {
-  tagHTML = '<div class="tag">' + tag;
+  let tagHTML = '<div class="tag">' + escapeHtml(tag);
   if (loggedIn) {
     tagHTML += '<span class="tag-remove-btn">x</span>';
   }
@@ -36,7 +41,7 @@ function addTag(inputElement, newTag, scenario_id) {
       }),
       success: function (response) {
         if (response.success) {
-          tagHTML = getTagHTML(newTag);
+          const tagHTML = getTagHTML(newTag);
           inputElement.replaceWith(tagHTML);
         } else {
           console.error('Error adding tag:', response.message);
@@ -81,14 +86,14 @@ $(document).ready(function () {
 		},
 		columns: [
 			{data: "ID", visible: false},
-			{data: "Title", className: "title-cell"},
+			{data: "Title", className: "title-cell"}, // server sends this pre-rendered as an <a class="scenario_link"> HTML string; must not be text-escaped here
 			{data: "Teaser", className: "teaser-cell", render: function (data) {
-				return '<span class="teaser-text">' + data + '</span><span class="teaser-toggle">Show more</span>';
+				return '<span class="teaser-text">' + escapeHtml(data) + '</span><span class="teaser-toggle">Show more</span>';
 			}},
 			{data: "Author", className: "meta-cell", render: function (data, type, row) {
-				var html = '<span class="meta-item">' + personIcon + '<span>' + data + '</span></span>';
-				html += '<span class="meta-item">' + calendarIcon + '<span>' + row.Year + '</span></span>';
-				html += '<span class="meta-item">' + folderIcon + '<span>' + row.Category + '</span></span>';
+				var html = '<span class="meta-item">' + personIcon + '<span>' + escapeHtml(data) + '</span></span>';
+				html += '<span class="meta-item">' + calendarIcon + '<span>' + escapeHtml(row.Year) + '</span></span>';
+				html += '<span class="meta-item">' + folderIcon + '<span>' + escapeHtml(row.Category) + '</span></span>';
 				return html;
 			}},
 			{data: "Year", visible: false},
@@ -101,10 +106,10 @@ $(document).ready(function () {
 				return tagsHtml;
 			}},
 			{data: "Votes", className: "votes-cell", render: function (data) {
-				n_votes = data[0];
-				upvoted = data[1];
-				label = n_votes === 1 ? 'vote' : 'votes';
-				html = '<div class="votes-block">';
+				const n_votes = data[0];
+				const upvoted = data[1];
+				const label = n_votes === 1 ? 'vote' : 'votes';
+				let html = '<div class="votes-block">';
 				if (loggedIn) {
 					html += '<svg height="14" width="14" class="upvote-icon"><polygon points="7,1 1,13 13,13" class="upvote_delta';
 					if (upvoted) {
@@ -159,6 +164,79 @@ $(document).ready(function () {
     table.order([opt.col, opt.dir]).draw();
   });
 
+  // Creates the inline tag-input (with autocomplete) used to add a new tag to a scenario.
+  function createTagInput($cell) {
+    const $input = $('<input type="text" class="tag-input">');
+    $cell.append($input);
+    $input.focus();
+
+    $input.autocomplete({
+      source: existingTags,
+      minLength: 0,
+      select: function (event, ui) {
+        event.preventDefault();
+        $(this).val(ui.item.value);
+      },
+      close: function () {
+        if ($input.data('selected')) {
+          $(this).remove();
+        }
+      },
+      create: function () {
+        $(this).data('ui-autocomplete')._renderItem = function (ul, item) {
+          return $('<li>')
+            .append($('<div>').addClass('dropdown-item').text(item.label))
+            .appendTo(ul.addClass('dropdown-menu'));
+        };
+      },
+    });
+
+    // Show the suggestions immediately when the input is focused
+    $input.on('focus', function () {
+      $(this).autocomplete('search', '');
+    });
+
+    // Remove input when the input loses focus
+    $input.on('blur', function () {
+      $(this).remove();
+    });
+
+    // Add the new tag when the user presses Enter
+    $input.on('keydown', function (event) {
+      if (event.keyCode === 13) { // Enter key
+        event.preventDefault();
+        const newTag = $(this).val().trim();
+        const row = table.row($(this).parents('tr'));
+        const id = row.data()['ID'];
+        addTag($(this), newTag, id);
+      }
+    });
+  }
+
+  // Sends an upvote/un-upvote request and updates the button + count optimistically.
+  function setVote(scenarioId, $button, isAdding) {
+    const $count = $button.parents('.votes-block').children('.upvote_count');
+    $button.toggleClass('upvoted', isAdding);
+    $count.text(parseInt($count.text()) + (isAdding ? 1 : -1));
+    $.ajax({
+      url: '/vote',
+      method: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify({
+        scenario_id: scenarioId,
+        vote: isAdding ? 'add' : 'remove',
+      }),
+      success: function (response) {
+        if (!response.success) {
+          console.error(isAdding ? 'Upvote unsuccessful' : 'Vote removal unsuccessful');
+        }
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        console.error('AJAX error:', textStatus, errorThrown);
+      },
+    });
+  }
+
   if (loggedIn) {
     // Add click event for removing tags
     $('#scenario_table').on('click', '.tag-remove-btn', function () {
@@ -167,7 +245,6 @@ $(document).ready(function () {
       const tagCell = tag.parent()
       const row = table.row(tagCell.parent())
       const scenario_id = row.data()['ID']
-      console.log(scenario_id);
       $.ajax({
         url: '/remove_tag',
         method: 'POST',
@@ -193,104 +270,16 @@ $(document).ready(function () {
     // Add click event for adding tags
     $('#scenario_table').on('click', '.tag_cell', function (e) {
       if (!$(e.target).is('.tag-remove-btn') && !$(e.target).is('.tag')) {
-        const input = $('<input type="text" class="tag-input">');
-        $(this).append(input);
-        input.focus();
-
-        input.autocomplete({
-          source: existingTags,
-          minLength: 0,
-          select: function (event, ui) {
-            event.preventDefault();
-            $(this).val(ui.item.value);
-          },
-          close: function () {
-            if (input.data('selected')) {
-              $(this).remove();
-            }
-          },
-          create: function () {
-            $(this).data('ui-autocomplete')._renderItem = function (ul, item) {
-              return $('<li>')
-                .append($('<div>').addClass('dropdown-item').text(item.label))
-                .appendTo(ul.addClass('dropdown-menu'));
-            };
-          },
-        });
-
-        // Show the suggestions immediately when the input is focused
-        input.on('focus', function () {
-          $(this).autocomplete('search', '');
-        });
-
-        // Remove input when the input loses focus
-        input.on('blur', function () {
-          $(this).remove();
-        });
-
-        // Add the new tag when the user presses Enter
-        input.on('keydown', function (event) {
-          if (event.keyCode === 13) { // Enter key
-            event.preventDefault();
-            const newTag = $(this).val().trim();
-            const row = table.row($(this).parents('tr'));
-            const id = row.data()['ID'];
-            addTag($(this), newTag, id);
-          }
-        });
+        createTagInput($(this));
       }
     });
 
     // add click event for upvoting
     $('#scenario_table').on('click', '.upvote_delta', function () {
-      row = table.row($(this).parents('tr'));
-      scenario_id = row.data()['ID'];
-      const count = $(this).parents('.votes-block').children('.upvote_count');
-      if (!$(this).hasClass('upvoted')) {
-        // add vote
-        $(this).addClass('upvoted');
-        count.html(parseInt(count.html()) + 1);
-        $.ajax({
-          url: '/vote',
-          method: 'POST',
-          contentType: 'application/json',
-          data: JSON.stringify({
-            scenario_id: scenario_id,
-            vote: 'add'
-          }),
-          success: function (response) {
-            if (!response.success) {
-              console.error('Upvote unsuccesfull');
-            } else {
-            }
-          },
-          error: function (jqXHR, textStatus, errorThrown) {
-            console.error('AJAX error:', textStatus, errorThrown);
-          }
-        });
-      } else {
-        // remove vote
-        $(this).removeClass('upvoted');
-        count.html(parseInt(count.html()) - 1);
-        $.ajax({
-          url: '/vote',
-          method: 'POST',
-          contentType: 'application/json',
-          data: JSON.stringify({
-            scenario_id: scenario_id,
-            vote: 'remove'
-          }),
-          success: function (response) {
-            if (!response.success) {
-              console.error('Removal unsuccesfull');
-            } else {
-            }
-          },
-          error: function (jqXHR, textStatus, errorThrown) {
-            console.error('AJAX error:', textStatus, errorThrown);
-          }
-        });
-      }
+      const $button = $(this);
+      const row = table.row($button.parents('tr'));
+      const scenario_id = row.data()['ID'];
+      setVote(scenario_id, $button, !$button.hasClass('upvoted'));
     });
   }
 
