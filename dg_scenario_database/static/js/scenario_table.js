@@ -1,6 +1,11 @@
 
+// Escapes a value for safe insertion into HTML built via string concatenation.
+function escapeHtml(value) {
+  return $('<div>').text(value).html();
+}
+
 function getTagHTML(tag) {
-  tagHTML = '<div class="tag badge bg-secondary">' + tag;
+  let tagHTML = '<div class="tag badge bg-secondary">' + escapeHtml(tag);
   if (loggedIn) {
     tagHTML += '<span class="tag-remove-btn">x</span>';
   }
@@ -21,7 +26,7 @@ function addTag(inputElement, newTag, scenario_id) {
       }),
       success: function (response) {
         if (response.success) {
-          tagHTML = getTagHTML(newTag);
+          const tagHTML = getTagHTML(newTag);
           inputElement.replaceWith(tagHTML);
         } else {
           console.error('Error adding tag:', response.message);
@@ -60,11 +65,11 @@ $(document).ready(function () {
 		},
 		columns: [
 			{data: "ID", visible: false},
-			{data: "Title"},
-			{data: "Teaser"},
-			{data: "Author"},
+			{data: "Title"}, // server sends this pre-rendered as an <a class="scenario_link"> HTML string; must not be text-escaped here
+			{data: "Teaser", render: $.fn.dataTable.render.text()},
+			{data: "Author", render: $.fn.dataTable.render.text()},
 			{data: "Year"},
-			{data: "Category"},
+			{data: "Category", render: $.fn.dataTable.render.text()},
 			{data: "Tags", render: function (data) {
 				var tagsHtml = '';
 				data.forEach(function (tag) {
@@ -73,9 +78,9 @@ $(document).ready(function () {
 				return tagsHtml;
 			}},
 			{data: "Votes", render: function (data) {
-				n_votes = data[0];
-				upvoted = data[1];
-				html = '<div class="row upvote_field"><div class="col-auto upvote_count">' + n_votes + '</div>';
+				const n_votes = data[0];
+				const upvoted = data[1];
+				let html = '<div class="row upvote_field"><div class="col-auto upvote_count">' + n_votes + '</div>';
 				if (loggedIn) {
 					html += '<div class="col text-right"><svg height="16" width="16"><polygon points="8,1 1,15 15,15" class="upvote_delta';
 					if (upvoted) {
@@ -108,7 +113,6 @@ $(document).ready(function () {
       const tagCell = tag.parent()
       const row = table.row(tagCell.parent())
       const scenario_id = row.data()['ID']
-      console.log(scenario_id);
       $.ajax({
         url: '/remove_tag',
         method: 'POST',
@@ -184,8 +188,8 @@ $(document).ready(function () {
 
     // add click event for upvoting
     $('#scenario_table').on('click', '.upvote_delta', function () {
-      row = table.row($(this).parents('tr'));
-      scenario_id = row.data()['ID'];
+      const row = table.row($(this).parents('tr'));
+      const scenario_id = row.data()['ID'];
       const count = $(this).parents('.upvote_field').children('.upvote_count');
       if (!$(this).hasClass('upvoted')) {
         // add vote
