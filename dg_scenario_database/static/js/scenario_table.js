@@ -176,9 +176,14 @@ $(document).ready(function () {
     const $input = $('<input type="text" class="tag-input">');
     $cell.find('.add-tag-btn').before($input);
     $input.focus();
+    getExistingTags(); // warm the cache as soon as the user starts adding a tag
 
     $input.autocomplete({
-      source: existingTags,
+      source: function (request, response) {
+        getExistingTags().then(function (existingTags) {
+          response($.ui.autocomplete.filter(existingTags, request.term));
+        });
+      },
       minLength: 0,
       select: function (event, ui) {
         event.preventDefault();

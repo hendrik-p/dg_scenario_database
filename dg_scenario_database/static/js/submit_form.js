@@ -8,6 +8,9 @@ $(document).ready(function () {
   }
 
   $('#tags')
+    .on("focus", function () {
+      getExistingTags(); // warm the cache as soon as the user reaches the field
+    })
     .on("keydown", function(event) {
       if (event.key === "Enter" || event.keyCode === $.ui.keyCode.TAB) {
         var term = extractLast(this.value);
@@ -19,7 +22,9 @@ $(document).ready(function () {
     .autocomplete({
       minLength: 0,
       source: function (request, response) {
-        response($.ui.autocomplete.filter(existingTags, extractLast(request.term)));
+        getExistingTags().then(function (existingTags) {
+          response($.ui.autocomplete.filter(existingTags, extractLast(request.term)));
+        });
       },
       focus: function() {
         return false;

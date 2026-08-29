@@ -14,14 +14,16 @@
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
   <script>
-    var existingTags = [];
-    $.ajax({
-          url: '/get_tags',
-          type: 'GET',
-          success: function (response) {
-                existingTags = response.tags;
-          }
-    });
+    // Fetches the tag list on first use and caches it for the rest of the page's lifetime.
+    var tagsPromise = null;
+    function getExistingTags() {
+      if (!tagsPromise) {
+        tagsPromise = $.ajax({ url: '/get_tags', type: 'GET' }).then(function (response) {
+          return response.tags;
+        });
+      }
+      return tagsPromise;
+    }
     {% if current_user.is_authenticated %}
     const loggedIn = true;
     {% else %}

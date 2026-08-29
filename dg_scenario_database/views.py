@@ -278,7 +278,10 @@ def check_login():
 def get_tags():
     tags = Tag.query.order_by(Tag.name.asc()).all()
     tag_names = [tag.name for tag in tags]
-    return jsonify(tags=tag_names)
+    response = jsonify(tags=tag_names)
+    response.cache_control.public = True
+    response.cache_control.max_age = 300
+    return response
 
 @app.route('/tag_table_config', methods=['GET'])
 def get_tag_table_config():
