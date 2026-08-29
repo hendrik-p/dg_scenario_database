@@ -30,6 +30,7 @@ function getTagHTML(tag) {
 
 // Function to add a new tag
 function addTag(inputElement, newTag, scenario_id) {
+  const $cell = inputElement.closest('.tag_cell');
   if (newTag) {
     $.ajax({
       url: '/add_tag',
@@ -47,14 +48,17 @@ function addTag(inputElement, newTag, scenario_id) {
           console.error('Error adding tag:', response.message);
           inputElement.remove()
         }
+        $cell.find('.add-tag-btn').show();
       },
       error: function (jqXHR, textStatus, errorThrown) {
         console.error('AJAX error:', textStatus, errorThrown);
         inputElement.remove()
+        $cell.find('.add-tag-btn').show();
       }
     });
   } else {
     inputElement.remove();
+    $cell.find('.add-tag-btn').show();
   }
 }
 
@@ -103,6 +107,9 @@ $(document).ready(function () {
 				data.forEach(function (tag) {
 					tagsHtml += getTagHTML(tag);
 				});
+				if (loggedIn) {
+					tagsHtml += '<div class="add-tag-btn">+ Add tag</div>';
+				}
 				return tagsHtml;
 			}},
 			{data: "Votes", className: "votes-cell", render: function (data) {
@@ -167,7 +174,7 @@ $(document).ready(function () {
   // Creates the inline tag-input (with autocomplete) used to add a new tag to a scenario.
   function createTagInput($cell) {
     const $input = $('<input type="text" class="tag-input">');
-    $cell.append($input);
+    $cell.find('.add-tag-btn').before($input);
     $input.focus();
 
     $input.autocomplete({
@@ -199,6 +206,7 @@ $(document).ready(function () {
     // Remove input when the input loses focus
     $input.on('blur', function () {
       $(this).remove();
+      $cell.find('.add-tag-btn').show();
     });
 
     // Add the new tag when the user presses Enter
@@ -268,10 +276,9 @@ $(document).ready(function () {
     });
 
     // Add click event for adding tags
-    $('#scenario_table').on('click', '.tag_cell', function (e) {
-      if (!$(e.target).is('.tag-remove-btn') && !$(e.target).is('.tag')) {
-        createTagInput($(this));
-      }
+    $('#scenario_table').on('click', '.add-tag-btn', function () {
+      $(this).hide();
+      createTagInput($(this).closest('.tag_cell'));
     });
 
     // add click event for upvoting

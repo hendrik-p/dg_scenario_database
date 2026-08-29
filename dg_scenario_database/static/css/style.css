@@ -33,6 +33,22 @@
   cursor: pointer;
 }
 
+.add-tag-btn {
+  display: inline-block;
+  padding: 3px 8px;
+  margin: 2px;
+  border-radius: 999px;
+  background-color: #ced4da;
+  color: #495057;
+  font-size: 0.8rem;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.add-tag-btn:hover {
+  background-color: #adb5bd;
+}
+
 .ui-autocomplete {
   position: absolute;
   z-index: 1000;
@@ -260,7 +276,6 @@
   align-content: flex-start;
   gap: 4px;
   align-self: stretch;
-  cursor: text;
   border-top: 1px solid #eee !important;
   margin-top: 2px;
   padding-top: 8px;
@@ -386,9 +401,8 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 6px 10px;
-  border-radius: 4px;
-  background: #f3f6f4;
+  padding: 6px 10px 6px 0;
+  border-right: 1px solid #eee;
 }
 
 #tag_table .tag-name {
@@ -408,9 +422,6 @@
   align-content: center;
   gap: 4px;
   padding: 6px 10px;
-  border-radius: 4px;
-  background: #fafafa;
-  border: 1px solid #eee;
 }
 
 #tag_table td.button-cell {
