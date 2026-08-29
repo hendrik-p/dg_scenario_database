@@ -37,7 +37,7 @@ def browse_tags():
     username = ''
     if current_user.is_authenticated:
         username = current_user.username
-    tags = Tag.query.order_by(Tag.name.asc()).all()
+    tags = Tag.query.filter(Tag.scenarios.any()).order_by(Tag.name.asc()).all()
     ip = request.headers.get('X-Forwarded-For', request.remote_addr)
     referrer = request.referrer
     app.logger.info(f'Tag site loaded. User: {username}, IP: {ip}, Referrer: {referrer}')
