@@ -15,6 +15,26 @@ $(document).ready(function () {
       config.pagingType = "full_numbers";
       config.jQueryUI = true;
       config.language = { searchPlaceholder: "Search tags..." };
+      config.drawCallback = function () {
+        $('#tag_table td.scenarios-cell').each(function () {
+          var $cell = $(this);
+          var $list = $cell.find('.scenarios-list');
+          var rowTops = [];
+          $list.children().each(function () {
+            if (rowTops.indexOf(this.offsetTop) === -1) {
+              rowTops.push(this.offsetTop);
+            }
+          });
+          rowTops.sort(function (a, b) { return a - b; });
+          if (rowTops.length > 2) {
+            $list[0].style.setProperty('--scenarios-clamp', rowTops[2] + 'px');
+            $cell.find('.scenarios-toggle').addClass('visible');
+          } else {
+            $list[0].style.removeProperty('--scenarios-clamp');
+            $cell.find('.scenarios-toggle').removeClass('visible');
+          }
+        });
+      };
 
       const table = $('#tag_table').DataTable(config);
 
@@ -29,6 +49,12 @@ $(document).ready(function () {
       $sortSelect.on('change', function () {
         const opt = tagSortOptions[$(this).val()];
         table.order([opt.col, opt.dir]).draw();
+      });
+
+      $('#tag_table').on('click', '.scenarios-toggle', function () {
+        const $cell = $(this).closest('.scenarios-cell');
+        const expanded = $cell.toggleClass('expanded').hasClass('expanded');
+        $(this).text(expanded ? 'Show less' : 'Show more');
       });
 
       $('#tag_table').on('click', '.btn', function() {

@@ -30,9 +30,12 @@
               <div class="scenarios-count">{{ tag.scenarios|length }} scenario{{ 's' if tag.scenarios|length != 1 else '' }}</div>
             </td>
             <td class="scenarios-cell">
-              {% for scenario in tag.scenarios %}
-              <a href="{{ scenario.url }}" class="scenario-pill">{{ scenario.title }}</a>
-              {% endfor %}
+              <div class="scenarios-list">
+                {% for scenario in tag.scenarios %}
+                <a href="{{ scenario.url }}" class="scenario-pill">{{ scenario.title }}</a>
+                {% endfor %}
+              </div>
+              <span class="scenarios-toggle">Show more</span>
             </td>
             {% if current_user.is_admin %}
             <td class="button-cell">

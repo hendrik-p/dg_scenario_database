@@ -418,10 +418,36 @@
 #tag_table td.scenarios-cell {
   grid-area: scenarios;
   display: flex;
-  flex-wrap: wrap;
-  align-content: center;
-  gap: 4px;
+  flex-direction: column;
+  justify-content: center;
   padding: 6px 10px;
+}
+
+#tag_table .scenarios-list {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 4px;
+  max-height: var(--scenarios-clamp, none);
+  overflow: hidden;
+}
+
+#tag_table td.scenarios-cell.expanded .scenarios-list {
+  max-height: none;
+  overflow: visible;
+}
+
+#tag_table .scenarios-toggle {
+  display: none;
+  color: #2e8b57;
+  font-size: 0.8rem;
+  cursor: pointer;
+  margin-top: 4px;
+}
+
+#tag_table .scenarios-toggle.visible {
+  display: inline-block;
 }
 
 #tag_table td.button-cell {
