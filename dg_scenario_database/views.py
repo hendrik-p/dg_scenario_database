@@ -37,7 +37,7 @@ def browse_tags():
     username = ''
     if current_user.is_authenticated:
         username = current_user.username
-    tags = Tag.query.filter(Tag.scenarios.any()).order_by(Tag.name.asc()).all()
+    tags = Tag.query.filter(Tag.scenarios.any(), Tag.visible == True).order_by(Tag.name.asc()).all()
     ip = request.headers.get('X-Forwarded-For', request.remote_addr)
     referrer = request.referrer
     app.logger.info(f'Tag site loaded. User: {username}, IP: {ip}, Referrer: {referrer}')
@@ -174,6 +174,18 @@ def edit_tags():
     tags = Tag.query.all()
     return render_template('edit_tags.html', tags=tags)
 
+@app.route('/toggle_tag_visibility', methods=['POST'])
+@login_required
+def toggle_tag_visibility():
+    if not current_user.is_admin:
+        return redirect(url_for('index'))
+    tag_id = request.values.get('tag_id')
+    tag = Tag.query.filter_by(id=tag_id).first()
+    tag.visible = not tag.visible
+    db.session.commit()
+    app.logger.info(f'Tag "{tag.name}" visibility set to {tag.visible} by user {current_user.username}')
+    return redirect(url_for('edit_tags'))
+
 @app.route('/show_users')
 def show_users():
     users = User.query.all()
@@ -276,7 +288,7 @@ def check_login():
 
 @app.route('/get_tags', methods=['GET'])
 def get_tags():
-    tags = Tag.query.order_by(Tag.name.asc()).all()
+    tags = Tag.query.filter_by(visible=True).order_by(Tag.name.asc()).all()
     tag_names = [tag.name for tag in tags]
     response = jsonify(tags=tag_names)
     response.cache_control.public = True
@@ -390,7 +402,7 @@ def get_scenario_data():
             'author' : scenario.author,
             'year' : scenario.year,
             'category' : scenario.category,
-            'tags' : [tag.name for tag in scenario.tags],
+            'tags' : [tag.name for tag in scenario.tags if tag.visible],
             'votes' : [n_votes, upvoted],
         }
         scenario_data.append(d)

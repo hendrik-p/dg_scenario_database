@@ -8,6 +8,7 @@
       <th>ID</th>
       <th>Name</th>
       <th>New Name</th>
+      <th>Visible</th>
     </tr>
   </thead>
   <tbody>
@@ -20,6 +21,12 @@
           <input type="hidden", value="{{ tag.id }}" name="tag_id">
           <input type="text" name="tag_name">
           <button class="btn btn-secondary btn-sm">Edit</button>
+        </form>
+      </td>
+      <td>
+        <form method="POST" action="{{ url_for('toggle_tag_visibility') }}">
+          <input type="hidden" value="{{ tag.id }}" name="tag_id">
+          <button class="btn btn-secondary btn-sm">{{ 'Hide' if tag.visible else 'Show' }}</button>
         </form>
       </td>
     </tr>

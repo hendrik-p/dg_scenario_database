@@ -36,6 +36,7 @@ class Tag(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
+    visible = db.Column(db.Boolean, server_default='1', nullable=False, default=True)
 
     scenarios = db.relationship(
         'Scenario',
