@@ -334,7 +334,10 @@ def delete_scenario():
         return jsonify({'success': False})
     data = request.get_json()
     scenario_id = data['scenario_id']
-    Scenario.query.filter_by(id=scenario_id).delete()
+    scenario = Scenario.query.filter_by(id=scenario_id).first()
+    if not scenario:
+        return jsonify({'success': False})
+    db.session.delete(scenario)
     db.session.commit()
     app.logger.info(f'Scenario {scenario_id} deleted by user {current_user.username}')
     return jsonify({'success': True})
