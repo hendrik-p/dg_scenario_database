@@ -277,7 +277,10 @@ def remove_tag_from_database():
     data = request.get_json()
     tag_id = data['tag_id']
     tag_name = data['tag_name']
-    Tag.query.filter_by(id=tag_id).delete()
+    tag = Tag.query.filter_by(id=tag_id).first()
+    if not tag:
+        return jsonify({'success' : False, 'message' : 'Tag not found'})
+    db.session.delete(tag)
     db.session.commit()
     app.logger.info(f'Tag "{tag_name}" removed from database by user {current_user.username}')
     return jsonify({'success' : True, 'message' : 'Tag removed successfully from database'})
