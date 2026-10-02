@@ -20,6 +20,7 @@ class Scenario(db.Model):
     year = db.Column(db.String)
     category = db.Column(db.String)
     url = db.Column(db.String)
+    click_count = db.Column(db.Integer, server_default='0', nullable=False, default=0)
 
     tags = db.relationship(
         'Tag',

@@ -32,6 +32,15 @@ def index():
     app.logger.info(f'Scenario site loaded. User: {username}, IP: {ip}, Referrer: {referrer}')
     return render_template('index.html')
 
+@app.route('/scenario/<int:scenario_id>')
+def visit_scenario(scenario_id):
+    scenario = Scenario.query.filter_by(id=scenario_id).first_or_404()
+    scenario.click_count += 1
+    db.session.commit()
+    ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    app.logger.info(f'Scenario {scenario_id} clicked. Title: {scenario.title}, IP: {ip}')
+    return redirect(scenario.url)
+
 @app.route('/tags')
 def browse_tags():
     username = ''
@@ -138,6 +147,14 @@ def dashboard():
     if not current_user.is_admin:
         return redirect(url_for('index'))
     return render_template('dashboard.html')
+
+@app.route('/scenario_clicks')
+@login_required
+def scenario_clicks():
+    if not current_user.is_admin:
+        return redirect(url_for('index'))
+    scenarios = Scenario.query.order_by(Scenario.click_count.desc()).all()
+    return render_template('scenario_clicks.html', scenarios=scenarios)
 
 @app.route('/edit_scenarios', methods=['GET', 'POST'])
 @login_required
@@ -400,7 +417,7 @@ def get_scenario_data():
     for scenario in scenarios:
         n_votes = vote_counts.get(scenario.id, 0)
         upvoted = scenario.id in user_upvoted_ids
-        scenario_link = f'<a href="{escape(scenario.url)}" class="scenario_link">{escape(scenario.title)}</a>'
+        scenario_link = f'<a href="{url_for("visit_scenario", scenario_id=scenario.id)}" class="scenario_link">{escape(scenario.title)}</a>'
         d = {
             'id' : scenario.id,
             'title' : scenario_link,
