@@ -1,4 +1,5 @@
 User-Agent: *
-Allow: / 
+Allow: /
+Disallow: /scenario/
 
 Sitemap: https://www.dg-scenario-database.com

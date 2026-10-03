@@ -32,7 +32,7 @@
             <td class="scenarios-cell">
               <div class="scenarios-list">
                 {% for scenario in tag.scenarios %}
-                <a href="{{ url_for('visit_scenario', scenario_id=scenario.id) }}" class="scenario-pill">{{ scenario.title }}</a>
+                <a href="{{ url_for('visit_scenario', scenario_id=scenario.id) }}" class="scenario-pill" rel="nofollow">{{ scenario.title }}</a>
                 {% endfor %}
               </div>
               <span class="scenarios-toggle">Show more</span>

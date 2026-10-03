@@ -1,4 +1,5 @@
 import os
+import re
 
 from flask import render_template, request, jsonify, redirect, url_for, flash, send_from_directory
 from markupsafe import escape
@@ -13,6 +14,11 @@ from dg_scenario_database.forms import LoginForm, RegistrationForm, ScenarioSubm
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+BOT_USER_AGENT_RE = re.compile(
+    r'bot|crawl|spider|slurp|facebookexternalhit|preview|wget|curl|python-requests',
+    re.IGNORECASE
+)
 
 # HTML routes
 
@@ -35,10 +41,13 @@ def index():
 @app.route('/scenario/<int:scenario_id>')
 def visit_scenario(scenario_id):
     scenario = Scenario.query.filter_by(id=scenario_id).first_or_404()
-    scenario.click_count += 1
-    db.session.commit()
     ip = request.headers.get('X-Forwarded-For', request.remote_addr)
-    app.logger.info(f'Scenario {scenario_id} clicked. Title: {scenario.title}, IP: {ip}')
+    user_agent = request.headers.get('User-Agent', '')
+    is_bot = bool(BOT_USER_AGENT_RE.search(user_agent))
+    if not is_bot:
+        scenario.click_count += 1
+        db.session.commit()
+        app.logger.info(f'Scenario {scenario_id} clicked. Title: {scenario.title}, IP: {ip}, User-Agent: {user_agent}')
     return redirect(scenario.url)
 
 @app.route('/tags')
@@ -417,7 +426,7 @@ def get_scenario_data():
     for scenario in scenarios:
         n_votes = vote_counts.get(scenario.id, 0)
         upvoted = scenario.id in user_upvoted_ids
-        scenario_link = f'<a href="{url_for("visit_scenario", scenario_id=scenario.id)}" class="scenario_link">{escape(scenario.title)}</a>'
+        scenario_link = f'<a href="{url_for("visit_scenario", scenario_id=scenario.id)}" class="scenario_link" rel="nofollow">{escape(scenario.title)}</a>'
         d = {
             'id' : scenario.id,
             'title' : scenario_link,
