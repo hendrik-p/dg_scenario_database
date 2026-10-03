@@ -4,6 +4,9 @@
 
 <div class="container mt-3">
   <h1>Scenario Clicks</h1>
+  <form method="POST" action="{{ url_for('reset_scenario_clicks') }}" onsubmit="return confirm('Reset all scenario click counts to 0? This cannot be undone.');">
+    <button type="submit" class="btn btn-secondary btn-sm mb-2">Reset all counts to 0</button>
+  </form>
   <table id="scenario_clicks_table" class="table table-bordered table-striped table-hover" style="width:100%">
     <thead>
       <tr>

@@ -165,6 +165,16 @@ def scenario_clicks():
     scenarios = Scenario.query.order_by(Scenario.click_count.desc()).all()
     return render_template('scenario_clicks.html', scenarios=scenarios)
 
+@app.route('/reset_scenario_clicks', methods=['POST'])
+@login_required
+def reset_scenario_clicks():
+    if not current_user.is_admin:
+        return redirect(url_for('index'))
+    Scenario.query.update({Scenario.click_count: 0})
+    db.session.commit()
+    app.logger.info(f'Scenario click counts reset by {current_user.username}')
+    return redirect(url_for('scenario_clicks'))
+
 @app.route('/edit_scenarios', methods=['GET', 'POST'])
 @login_required
 def edit_scenarios():
