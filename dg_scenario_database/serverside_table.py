@@ -114,7 +114,7 @@ class ServerSideTable(object):
             key_fn = lambda x: x[column_name]
             if column_name == 'Title':
                 # match based on actual title, not on link
-                key_fn = lambda x: re.match(r'<a href=".*" class="scenario_link">(.*)</a>', x['Title']).group(1)
+                key_fn = lambda x: re.match(r'<a href=".*" class="scenario_link"[^>]*>(.*)</a>', x['Title']).group(1)
             data = sorted(data, key=key_fn, reverse=reverse)
         return data
 
